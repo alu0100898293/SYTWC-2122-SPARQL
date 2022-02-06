@@ -1,5 +1,5 @@
 {
-  "name": "SPARQL Novel's query",
+  "name": "sparql_novels_query",
   "version": "1.0.0",
   "scripts": {
     "serve": "vue-cli-service serve",
