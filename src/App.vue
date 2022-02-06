@@ -1,7 +1,14 @@
 <template>
   <div id="app">
     <div class="app-container">
-      <img alt="Vue logo" src="./assets/primevue-logo.png">
+      <h1> Wikidata Query Service for Novels</h1>
+      <h2> Instructions</h2>
+      <p> The unique <b>required field </b> is the author, it's case sensitive and 
+      you need to introduce the full name of the author</p>
+      <p> The rest of params are optionals and dont need the full name, for example, if you 
+        are looking for the <i>science fiction</i> genre, you can search by the genre science, 
+        but it's still case sensitive.</p>
+      <p> The publish date must be in the format yyyy-mm-dd, including the left ceros </p>
       <MainView />
     </div>
 

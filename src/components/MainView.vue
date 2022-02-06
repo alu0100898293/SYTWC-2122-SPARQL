@@ -1,23 +1,53 @@
 <template>  
   <Card>
     <template #content>
-        <form @submit.prevent="send">
-            <InputText placeholder="Author name" type="text" v-model="author"/>
-            <InputText placeholder="Novel name" type="text" v-model="novelName"/>
-            <InputText placeholder="Novel series name" type="text" v-model="novelSerie"/>
-            <InputText placeholder="Novel genre" type="text" v-model="novelGenre"/>
-            <InputText placeholder="Date from publish" type="text" v-model="publishDateFrom"/>
-            <InputText placeholder="Date to publish" type="text" v-model="publishDateTo"/>
-            <Button type="submit" label="Submit"/>
-        </form>
-        <DataTable :value="queryResult" responsiveLayout="scroll">
-                        <Column field="novel" header="Id"></Column>
-                        <Column field="novelLabel" header="Title"></Column>
-                        <Column field="authorLabel" header="Author"></Column>
-                        <Column field="genres" header="Genres"></Column>
-                        <Column field="firstPublication" header="First Publication"></Column>
-                        <Column field="serie_label" header="Serie"></Column>
-        </DataTable>
+      <div class="flex-row">
+        <div class="flex-col">
+          <form @submit.prevent="send">
+              <span class="p-float-label">
+                <InputText :class="{'p-invalid': authorError}" type="text" v-model="data.author"/>
+                <label >Author name</label>
+              </span>
+              <span class="p-float-label">
+                <InputText type="text" v-model="data.novelName"/>
+                <label>Novel name</label>
+              </span>
+              <span class="p-float-label">
+                <InputText type="text" v-model="data.novelSerie"/>
+                <label >Series name</label>
+              </span>
+              <span class="p-float-label">
+                <InputText type="text" v-model="data.novelGenre"/>
+                <label >Novel genre</label>
+              </span>
+              <span class="p-float-label">
+                <InputText :class="{'p-invalid': dateFromError}" type="text" v-model="data.publishDateFrom"/>
+                <label style="font-size:15px">Publish date from (yyyy-mm-dd)</label>
+              </span>
+              <span class="p-float-label">
+                <InputText :class="{'p-invalid': dateToError}" type="text" v-model="data.publishDateTo"/>
+                <label style="font-size:15px">Publish date to (yyyy-mm-dd)</label>
+              </span>
+              <Button type="submit" label="Submit"/>
+          </form>
+        </div>
+        <div class="flex-col">
+          <DataTable :value="queryResult" responsiveLayout="scroll">
+                          <Column field="novel.value" header="Id">
+                          <template #body="slotProps">
+                            <a :href="slotProps.data.novel.value" v-text="slotProps.data.novel.value" />
+                          </template>
+                          </Column>
+                          <Column field="novel_label.value" header="Title"></Column>
+                          <Column field="authorLabel.value" header="Author"></Column>
+                          <Column field="genres.value" header="Genres"></Column>
+                          <Column field="firstPublication.value" header="First Publication"></Column>
+                          <Column field="serie_label.value" header="Serie"></Column>
+          </DataTable>
+          <p style="color: red;" v-if="queryEmpty"> No results </p>
+          <p style="color: blue;" v-if="queryInProgress"> Please be patient, the search is in progress</p>
+        </div>
+      </div>
     </template>
     </Card>
 </template>
@@ -32,13 +62,13 @@ export default {
     name: 'MainView',
     data() {
         return {
-            author: null,
-            novelName: null,
-            novelSerie: null,
-            novelGenre: null,
-            publishDateFrom: null,
-            publishDateTo: null, 
-            queryResult: null
+            data: {},
+            queryResult: [],
+            queryEmpty: false,
+            queryInProgress: false,
+            authorError: false,
+            dateFromError: false,
+            dateToError: false,
         }
     },
     query: null,
@@ -49,58 +79,54 @@ export default {
     },
     created() {
         this.query = new Query();
+        this.data.publishDateFrom = ""
+        this.data.publishDateTo = ""
     },
     methods: {
             send() {
-                console.log(this.author)
-                console.log(this.novelName)
-                console.log(this.novelSerie)
-                console.log(this.novelGenre)
-                console.log(this.publishDateFrom)
-                if(!this.publishDateTo)
-                    console.log("publishDateTo es null")
+                this.queryEmpty = false
+                this.queryInProgress = true
+                this.queryResult = []
+                
+                if(this.data.author)
+                    this.authorError = false
                 else
-                    console.log(this.publishDateTo)
+                    this.authorError = true
 
-                this.query.fetchQuery().then(data => {
-                    this.queryResult = data
-                    console.log(data)
-                });
-            }
+                //Checking date format
+                if(this.data.publishDateTo !== "")
+                  this.query.isValidDate(this.data.publishDateTo).then(error => {
+                    if(error)
+                      this.dateToError = false
+                    else
+                      this.dateToError = true
+                  })
+                else
+                  this.dateToError = false
+
+                //Checking date format
+                if(this.data.publishDateFrom !== "")
+                  this.query.isValidDate(this.data.publishDateFrom).then(error => {
+                    if(error)
+                      this.dateFromError = false
+                    else
+                      this.dateFromError = true
+                  })
+                else
+                  this.dateFromError = false
+                
+                if(!this.authorError && !this.dateToError && !this.dateFromError){
+                  this.query.fetchQuery(this.data).then(data => {
+                    this.queryInProgress = false
+                      if(data.results.bindings.length > 0)
+                        this.queryResult = data.results.bindings
+                      else  
+                        this.queryEmpty = true
+                  });
+                }
+            },
+            
     }
-  /*props: {
-    parada: Number
-  },
-  created() {
-    this.horarios = new Horarios();
-  },
-  watch : {
-    parada: function() {
-      const URL = "http://localhost:3000"
-      return fetch(`${URL}/${this.parada}`, {
-        method : "GET",
-        mode: 'cors'
-      })
-      .then(res => res.json())
-      .then(d => {
-        this.lineas = d.lineas
-        console.log("segundo fetch")
-        var aux = new Object();
-        aux.lineas = []
-        aux.horarios = []
-
-        for(var i=0; i < d.length ;i++ )
-        {
-          aux.lineas.push(d[i])
-          this.horarios.getHorariosSmall(this.parada.shortName).then(data => {
-            aux.horarios.push(data)
-          });
-        }
-
-        this.horario = aux.horarios[0]
-      });
-    }
-  }*/
 }
 </script>
 
