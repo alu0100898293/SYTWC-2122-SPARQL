@@ -6,6 +6,10 @@ Este proyecto tiene como fin cumplir con los requerimientos impuestos en la prr�
 
 Este proyecto se trata de una aplicación web dedicada a la consulta de novelas según el nombre de su autor, donde podemos introducir parámetros adicionales como nombre de la novela, género, nombre de la serie a la que pertenece y un margen de fechas de su primera publicación. Por temas relacionados a la definición de la consulta, la plaicación es estricta en cuanto al uso de mayúsculas y además, se precisa del nombre completo del autor con el que figura en la novela.
 
+## Despliegue online
+
+La apliación web se encuentra desplegada en la plataforma Vercel y puede probarse en el siguiente [enlace](https://sytwc-2122-sparql.vercel.app/).
+
 ## Instalación y ejecución
 
 ### Instalción
